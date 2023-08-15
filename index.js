@@ -127,30 +127,22 @@ const checkLocalStorage = async () => {
   }
 };
 
-const getAllUnusedItems = async () => {
+const printAllUnusedItems = async () => {
   const response = await fetch(domain + "/items", { method: "GET" });
 
   const getAllItems = await response.json();
   const unusedItems = getAllItems.filter((e) => e.characterId === null);
 
-  console.log(unusedItems);
+  let message = "";
 
   unusedItems.forEach((e) => {
-    // for (let prop in e) {
-    //   if (!Object.keys(prop).includes(null)) {
-    //     console.log(`${prop}: ${Object.values(prop).includes(null)}`);
-    //   }
-    // }
     Object.keys(e).forEach((k) => {
-      if (e[k] !== null) alert(`${k}:${e[k]}`);
+      if (e[k] !== null) message += `${k}: ${e[k]}\n`;
     });
-    console.log("\n");
+    message += "\n";
   });
-
-  return unusedItems;
+  alert(message);
 };
-
-getAllUnusedItems();
 
 const getAllUsedItems = async (selectedCharacterId) => {
   const response = await fetch(domain + "/items", {
@@ -165,8 +157,6 @@ const getAllUsedItems = async (selectedCharacterId) => {
 
   return usedItems;
 };
-
-// getAllUsedItems(14);
 
 const printMainMenu = async () => {
   let choice = "";
@@ -231,7 +221,7 @@ const printMainMenu = async () => {
     do {
       choice = prompt(`Hello ${nameAndClass}
 choose:
-1 - Show all items
+1 - Show unused items
 2 - Show equipped items
 3 - Show character stats
 4 - Create new character
@@ -240,17 +230,27 @@ choose:
 7 - Exit`);
       switch (choice) {
         case "1":
-          getAllUnusedItems();
+          printAllUnusedItems();
           break;
+
         case "2":
+          let message = `${await getSelectedCharacterInfo()}
+Enter:
+Id of item (to unequipp)
+Id (of other unequipped item) for swap 
+`;
           const selectedCharacterId = parseInt(localStorage.getItem("id"));
           const usedItems = await getAllUsedItems(selectedCharacterId);
-          console.log(usedItems);
-          usedItems.map((e) => console.log(`${e.name}: id-${e.id}`));
+          usedItems.map((e) => (message += ` - ${e.name} (id: ${e.id})\n`));
+          const userInputForItem = prompt(message);
+          if (userInputForItem === usedItems[userInputForItem])
+            console.log("match");
           break;
+
         case "7":
-          alert("Returning to main menu..");
+          alert("Exiting console application..");
           break;
+
         default:
           alert("Wrong input");
       }
@@ -259,4 +259,4 @@ choose:
   }
 };
 
-// printMainMenu();
+printMainMenu();
