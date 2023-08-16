@@ -127,13 +127,14 @@ const checkLocalStorage = async () => {
   }
 };
 
-const printAllUnusedItems = async () => {
+const printAndGetAllUnusedItems = async () => {
   const response = await fetch(domain + "/items", { method: "GET" });
 
   const getAllItems = await response.json();
   const unusedItems = getAllItems.filter((e) => e.characterId === null);
 
-  let message = "";
+  let message = `Unused items:
+`;
 
   unusedItems.forEach((e) => {
     Object.keys(e).forEach((k) => {
@@ -142,6 +143,7 @@ const printAllUnusedItems = async () => {
     message += "\n";
   });
   alert(message);
+  return unusedItems;
 };
 
 const getAllUsedItems = async (selectedCharacterId) => {
@@ -156,6 +158,20 @@ const getAllUsedItems = async (selectedCharacterId) => {
   );
 
   return usedItems;
+};
+
+const unequipItem = async (userInputForItem) => {
+  const response = await fetch(domain + "/items/" + userInputForItem, {
+    method: "PATCH",
+    body: JSON.stringify({
+      characterId: null,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const data = await response.json();
+
+  return data;
 };
 
 const printMainMenu = async () => {
@@ -230,7 +246,7 @@ choose:
 7 - Exit`);
       switch (choice) {
         case "1":
-          printAllUnusedItems();
+          printAndGetAllUnusedItems();
           break;
 
         case "2":
@@ -241,10 +257,22 @@ Id (of other unequipped item) for swap
 `;
           const selectedCharacterId = parseInt(localStorage.getItem("id"));
           const usedItems = await getAllUsedItems(selectedCharacterId);
+          const unusedItems = await printAndGetAllUnusedItems();
+
           usedItems.map((e) => (message += ` - ${e.name} (id: ${e.id})\n`));
-          const userInputForItem = prompt(message);
-          if (userInputForItem === usedItems[userInputForItem])
-            console.log("match");
+          const userInputForItem = parseInt(prompt(message));
+          if (userInputForItem === usedItems[userInputForItem]?.id)
+            unequipItem(userInputForItem);
+          else {
+            if (unusedItems.find((item) => item.id === userInputForItem))
+              console.log("Show stats -> change?");
+            else {
+              alert("Cannot find item with that id. Exiting...");
+            }
+          }
+          break;
+
+        case "3":
           break;
 
         case "7":
@@ -254,7 +282,7 @@ Id (of other unequipped item) for swap
         default:
           alert("Wrong input");
       }
-    } while (choice !== "1" && choice !== "7");
+    } while (choice !== "1" && choice !== "2" && choice !== "7");
     // getSelectedCharacterInfo() // print name and new menu
   }
 };
