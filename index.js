@@ -245,6 +245,25 @@ const getCharacterNames = async () => {
   return allCharacters.map((character) => character.name);
 };
 
+const getAllCharacters = async () => {
+  const response = await fetch(domain + "/characters/");
+
+  const allCharactersData = await response.json();
+
+  let message = `All characters:
+`;
+
+  allCharactersData.forEach((character) => {
+    Object.keys(character).forEach((prop) => {
+      if (character[prop] !== null) message += `${prop}: ${character[prop]}\n`;
+    });
+    message += "\n";
+  });
+
+  console.log(message); // just because message does not fit in alert box
+  alert(message);
+};
+
 const printMainMenu = async () => {
   let choice = "";
   const result = await checkLocalStorage();
@@ -272,10 +291,10 @@ const printMainMenu = async () => {
     } while (choice !== "0" && choice !== "1");
     return;
   } else if (result) {
-    const nameAndClass = await getSelectedCharacterInfo();
     let choice = "";
 
     do {
+      const nameAndClass = await getSelectedCharacterInfo();
       choice = prompt(`Hello ${nameAndClass}
 choose:
 1 - Show unused items
@@ -287,7 +306,7 @@ choose:
 7 - Exit`);
       switch (choice) {
         case "1":
-          printAndGetAllUnusedItems();
+          await printAndGetAllUnusedItems();
           break;
 
         case "2":
@@ -368,7 +387,24 @@ Equiped:
           break;
 
         case "5":
-          //change character (show all, enter name to switch)
+          await getAllCharacters();
+          const characterNames = await getCharacterNames();
+
+          const userInputForCharacterName = capitalize(
+            prompt("Switch character (enter characters name):")
+          );
+
+          if (characterNames.includes(userInputForCharacterName)) {
+            const index = characterNames.indexOf(userInputForCharacterName);
+            const characterToChangeId = index + 1;
+
+            localStorage.setItem("id", characterToChangeId);
+            alert(`Switched to character ${characterNames[index]}.`);
+          } else {
+            alert(
+              "Can't find character with that name. Returning to main menu..."
+            );
+          }
           break;
 
         case "6":
@@ -382,7 +418,7 @@ Equiped:
         default:
           alert("Wrong input");
       }
-    } while (choice !== "1" && choice !== "2" && choice !== "7");
+    } while (choice !== "7");
     // getSelectedCharacterInfo() // print name and new menu
   }
 };
