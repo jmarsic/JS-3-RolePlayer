@@ -167,6 +167,30 @@
       "damagePoints": 55,
       "defensePoints": 52,
       "id": 14
+    },
+    {
+      "name": "Novi char",
+      "class": "Mage",
+      "strength": 4,
+      "agility": 1,
+      "intelligence": 6,
+      "healthPoints": 84,
+      "manaPoints": 92,
+      "damagePoints": 81,
+      "defensePoints": 96,
+      "id": 15
+    },
+    {
+      "name": "Ivo banan",
+      "class": "Rouge",
+      "strength": 4,
+      "agility": 5,
+      "intelligence": 4,
+      "healthPoints": 100,
+      "manaPoints": 58,
+      "damagePoints": 57,
+      "defensePoints": 82,
+      "id": 16
     }
   ],
   "items": [
@@ -181,7 +205,7 @@
       "manaPoints": null,
       "damage": 420,
       "defense": null,
-      "characterId": 14
+      "characterId": null
     },
     {
       "id": 1,
@@ -212,7 +236,7 @@
     {
       "id": 3,
       "name": "ice and fire",
-      "slot": "gloves",
+      "slot": "weapon",
       "strength": 35,
       "agility": null,
       "intelligence": 35,
@@ -220,7 +244,7 @@
       "manaPoints": 10,
       "damage": null,
       "defense": null,
-      "characterId": null
+      "characterId": 14
     }
   ]
 }

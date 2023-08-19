@@ -75,6 +75,37 @@ const getRandomHealthManaDamageDefensePoints = () => {
 
 const domain = "http://localhost:3000";
 
+const newCharacterForm = async () => {
+  const name = capitalize(prompt("Enter name of character:"));
+  let userInputForCharacterClass = "";
+  do {
+    userInputForCharacterClass = capitalize(
+      prompt("Enter class of character:")
+    );
+    if (!Object.values(characterClasses).includes(userInputForCharacterClass))
+      alert("Wrong input. Class to enter: 'warrior'/'rouge'/'mage'");
+  } while (
+    !Object.values(characterClasses).includes(userInputForCharacterClass)
+  );
+
+  const classStats = getClassStats(userInputForCharacterClass); // {strength: 7, agility: 3, intelligence: 10}
+  const classPoints = getRandomHealthManaDamageDefensePoints(); // {healthPoints: 51, manaPoints: 50, damagePoints: 83, defensePoints: 88}
+
+  const character = {
+    name,
+    class: userInputForCharacterClass,
+    strength: classStats.strength,
+    agility: classStats.agility,
+    intelligence: classStats.intelligence,
+    healthPoints: classPoints.healthPoints,
+    manaPoints: classPoints.manaPoints,
+    damagePoints: classPoints.damagePoints,
+    defensePoints: classPoints.defensePoints,
+  };
+
+  return character;
+};
+
 async function createNewCharacter(character) {
   const response = await fetch(domain + "/characters", {
     method: "POST",
@@ -115,10 +146,8 @@ const getSelectedCharacterInfo = async () => {
 };
 
 const checkLocalStorage = async () => {
-  // need to be async function because of await in else if
   if (localStorage.getItem("id") === null) return false;
   else if (await isCharacterSelected()) {
-    // used await to first check is character selected and then print message if it is
     alert("There is selected hero");
     return true;
   } else if ((await isCharacterSelected()) === false) {
@@ -174,6 +203,48 @@ const unequipItem = async (userInputForItem) => {
   return data;
 };
 
+const equipItem = async (equipItemId, selectedCharacterId) => {
+  const response = await fetch(domain + "/items/" + equipItemId, {
+    method: "PATCH",
+    body: JSON.stringify({
+      characterId: selectedCharacterId,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const data = await response.json();
+
+  return data;
+};
+
+const withoutNullValues = (sameSlotCurrentItem) => {
+  return Object.fromEntries(
+    Object.entries(sameSlotCurrentItem).filter(
+      ([key, value]) =>
+        !key.includes("id") && !key.includes("Id") && value !== null
+    )
+  );
+};
+
+const getCharacterStats = async () => {
+  const selectedCharacter = localStorage.getItem("id");
+
+  const response = await fetch(domain + "/characters/" + selectedCharacter);
+  const selectedCharacterData = await response.json();
+  console.log(await selectedCharacterData);
+
+  return data;
+};
+// getCharacterStats();
+
+const getCharacterNames = async () => {
+  const response = await fetch(domain + "/characters/");
+
+  const allCharacters = await response.json();
+
+  return allCharacters.map((character) => character.name);
+};
+
 const printMainMenu = async () => {
   let choice = "";
   const result = await checkLocalStorage();
@@ -187,42 +258,12 @@ const printMainMenu = async () => {
           alert("Exiting..");
           break;
         case "1":
-          const name = capitalize(prompt("Enter name of character:"));
-          let userInputForCharacterClass = "";
-          do {
-            userInputForCharacterClass = capitalize(
-              prompt("Enter class of character:")
-            );
-            if (
-              !Object.values(characterClasses).includes(
-                userInputForCharacterClass
-              )
-            )
-              alert("Wrong input. Class to enter: 'warrior'/'rouge'/'mage'");
-          } while (
-            !Object.values(characterClasses).includes(
-              userInputForCharacterClass
-            )
-          );
-
-          const classStats = getClassStats(userInputForCharacterClass); // {strength: 7, agility: 3, intelligence: 10}
-          const classPoints = getRandomHealthManaDamageDefensePoints(); // {healthPoints: 51, manaPoints: 50, damagePoints: 83, defensePoints: 88}
-
-          const character = {
-            name,
-            class: userInputForCharacterClass,
-            strength: classStats.strength,
-            agility: classStats.agility,
-            intelligence: classStats.intelligence,
-            healthPoints: classPoints.healthPoints,
-            manaPoints: classPoints.manaPoints,
-            damagePoints: classPoints.damagePoints,
-            defensePoints: classPoints.defensePoints,
-          };
+          const character = await newCharacterForm();
 
           const addedCharacter = await createNewCharacter(character);
 
           localStorage.setItem("id", addedCharacter.id); // set id to localstorage
+
           break;
 
         default:
@@ -258,21 +299,80 @@ Id (of other unequipped item) for swap
           const selectedCharacterId = parseInt(localStorage.getItem("id"));
           const usedItems = await getAllUsedItems(selectedCharacterId);
           const unusedItems = await printAndGetAllUnusedItems();
-
-          usedItems.map((e) => (message += ` - ${e.name} (id: ${e.id})\n`));
+          message += `
+Equiped:
+`;
+          usedItems.map(
+            (e) => (message += ` - ${e.name}, slot: ${e.slot} (id: ${e.id})\n`)
+          );
           const userInputForItem = parseInt(prompt(message));
-          if (userInputForItem === usedItems[userInputForItem]?.id)
+          if (userInputForItem === usedItems[userInputForItem]?.id) {
             unequipItem(userInputForItem);
-          else {
-            if (unusedItems.find((item) => item.id === userInputForItem))
-              console.log("Show stats -> change?");
-            else {
-              alert("Cannot find item with that id. Exiting...");
+            alert(`Unequiped item ${usedItems[userInputForItem]?.name}`);
+          } else {
+            const unusedItem = unusedItems.find(
+              (item) => item.id === userInputForItem
+            );
+            const sameSlotCurrentItem = usedItems.find(
+              (item) => item.slot === unusedItem.slot
+            );
+            if (sameSlotCurrentItem === undefined) {
+              alert("Didnt find item with same slot. Exiting...");
+            } else if (sameSlotCurrentItem.slot === unusedItem.slot) {
+              const resultCurrentItem = withoutNullValues(sameSlotCurrentItem);
+              const resultUnusedItem = withoutNullValues(unusedItem);
+              let userInputForSwapItem = "";
+              do {
+                userInputForSwapItem = prompt(`Want to keep
+                ${JSON.stringify(resultCurrentItem)}
+                or swap to
+                ${JSON.stringify(resultUnusedItem)}?
+                Enter yes or no:`).toLowerCase();
+              } while (
+                userInputForSwapItem !== "yes" &&
+                userInputForSwapItem !== "no"
+              );
+              if (userInputForSwapItem === "yes") {
+                const equipItemId = unusedItem.id;
+
+                await unequipItem(sameSlotCurrentItem.id);
+                await equipItem(equipItemId, selectedCharacterId);
+
+                alert(
+                  `Unequiped ${sameSlotCurrentItem.name} and equiped ${unusedItem.name}.`
+                );
+              } else {
+                alert("Did not swap items. Exiting...");
+              }
             }
           }
           break;
 
         case "3":
+          //print character stats (base + from items)
+          // getCharacterStats();
+          break;
+
+        case "4":
+          const names = await getCharacterNames();
+          const character = await newCharacterForm();
+          if (names.includes(character.name)) {
+            alert(
+              "Can not create character with name that already exists. Exiting.."
+            );
+          } else {
+            const addedCharacter = await createNewCharacter(character);
+            localStorage.setItem("id", addedCharacter.id);
+            alert(`New character ${character.name} created.`);
+          }
+          break;
+
+        case "5":
+          //change character (show all, enter name to switch)
+          break;
+
+        case "6":
+          //dungen (random item with 2 stats, enter name)
           break;
 
         case "7":
