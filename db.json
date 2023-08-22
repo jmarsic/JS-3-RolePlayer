@@ -8,8 +8,8 @@
       "intelligence": 3,
       "healthPoints": 64,
       "manaPoints": 73,
-      "damagePoints": 73,
-      "defensePoints": 62,
+      "damage": 73,
+      "defense": 62,
       "id": 1
     },
     {
@@ -20,8 +20,8 @@
       "intelligence": 6,
       "healthPoints": 68,
       "manaPoints": 72,
-      "damagePoints": 88,
-      "defensePoints": 97,
+      "damage": 88,
+      "defense": 97,
       "id": 2
     },
     {
@@ -32,8 +32,8 @@
       "intelligence": 9,
       "healthPoints": 91,
       "manaPoints": 72,
-      "damagePoints": 57,
-      "defensePoints": 76,
+      "damage": 57,
+      "defense": 76,
       "id": 3
     },
     {
@@ -44,8 +44,8 @@
       "intelligence": 10,
       "healthPoints": 60,
       "manaPoints": 84,
-      "damagePoints": 93,
-      "defensePoints": 76,
+      "damage": 93,
+      "defense": 76,
       "id": 4
     },
     {
@@ -56,8 +56,8 @@
       "intelligence": 6,
       "healthPoints": 84,
       "manaPoints": 95,
-      "damagePoints": 76,
-      "defensePoints": 89,
+      "damage": 76,
+      "defense": 89,
       "id": 5
     },
     {
@@ -68,8 +68,8 @@
       "intelligence": 8,
       "healthPoints": 68,
       "manaPoints": 61,
-      "damagePoints": 61,
-      "defensePoints": 72,
+      "damage": 61,
+      "defense": 72,
       "id": 6
     },
     {
@@ -80,8 +80,8 @@
       "intelligence": 6,
       "healthPoints": 62,
       "manaPoints": 84,
-      "damagePoints": 93,
-      "defensePoints": 83,
+      "damage": 93,
+      "defense": 83,
       "id": 7
     },
     {
@@ -92,8 +92,8 @@
       "intelligence": 5,
       "healthPoints": 84,
       "manaPoints": 73,
-      "damagePoints": 92,
-      "defensePoints": 65,
+      "damage": 92,
+      "defense": 65,
       "id": 8
     },
     {
@@ -104,8 +104,8 @@
       "intelligence": 5,
       "healthPoints": 88,
       "manaPoints": 72,
-      "damagePoints": 62,
-      "defensePoints": 95,
+      "damage": 62,
+      "defense": 95,
       "id": 9
     },
     {
@@ -116,8 +116,8 @@
       "intelligence": 8,
       "healthPoints": 95,
       "manaPoints": 96,
-      "damagePoints": 99,
-      "defensePoints": 67,
+      "damage": 99,
+      "defense": 67,
       "id": 10
     },
     {
@@ -128,8 +128,8 @@
       "intelligence": 10,
       "healthPoints": 77,
       "manaPoints": 76,
-      "damagePoints": 100,
-      "defensePoints": 57,
+      "damage": 100,
+      "defense": 57,
       "id": 11
     },
     {
@@ -140,63 +140,27 @@
       "intelligence": 8,
       "healthPoints": 84,
       "manaPoints": 97,
-      "damagePoints": 52,
-      "defensePoints": 91,
+      "damage": 52,
+      "defense": 91,
       "id": 12
     },
     {
-      "name": "Ivo babic",
+      "name": "Butch",
       "class": "Warrior",
-      "strength": 9,
-      "agility": 3,
-      "intelligence": 0,
-      "healthPoints": 73,
-      "manaPoints": 80,
-      "damagePoints": 68,
-      "defensePoints": 57,
-      "id": 13
-    },
-    {
-      "name": "Pyero",
-      "class": "Mage",
-      "strength": 5,
-      "agility": 3,
+      "strength": 6,
+      "agility": 7,
       "intelligence": 7,
-      "healthPoints": 93,
-      "manaPoints": 98,
-      "damagePoints": 55,
-      "defensePoints": 52,
-      "id": 14
-    },
-    {
-      "name": "Novi char",
-      "class": "Mage",
-      "strength": 4,
-      "agility": 1,
-      "intelligence": 6,
-      "healthPoints": 84,
-      "manaPoints": 92,
-      "damagePoints": 81,
-      "defensePoints": 96,
-      "id": 15
-    },
-    {
-      "name": "Ivo banan",
-      "class": "Rouge",
-      "strength": 4,
-      "agility": 5,
-      "intelligence": 4,
-      "healthPoints": 100,
-      "manaPoints": 58,
-      "damagePoints": 57,
-      "defensePoints": 82,
-      "id": 16
+      "healthPoints": 98,
+      "manaPoints": 84,
+      "damage": 80,
+      "defense": 97,
+      "id": 13
     }
   ],
   "items": [
     {
-      "id": 0,
-      "name": "vatreni pimplun",
+      "id": 1,
+      "name": "Vatreni pimplun",
       "slot": "weapon",
       "strength": null,
       "agility": null,
@@ -205,11 +169,11 @@
       "manaPoints": null,
       "damage": 420,
       "defense": null,
-      "characterId": null
+      "characterId": 13
     },
     {
-      "id": 1,
-      "name": "wise helmet",
+      "id": 2,
+      "name": "Wise helmet",
       "slot": "helmet",
       "strength": null,
       "agility": null,
@@ -221,8 +185,8 @@
       "characterId": null
     },
     {
-      "id": 2,
-      "name": "light plate mail",
+      "id": 3,
+      "name": "Light plate mail",
       "slot": "armor",
       "strength": null,
       "agility": 30,
@@ -234,8 +198,8 @@
       "characterId": null
     },
     {
-      "id": 3,
-      "name": "ice and fire",
+      "id": 4,
+      "name": "Ice and fire",
       "slot": "weapon",
       "strength": 35,
       "agility": null,
@@ -244,7 +208,7 @@
       "manaPoints": 10,
       "damage": null,
       "defense": null,
-      "characterId": 14
+      "characterId": null
     }
   ]
 }

@@ -59,12 +59,12 @@ const getClassStats = (characterClass) => {
   return stats;
 };
 
-const getRandomHealthManaDamageDefensePoints = () => {
+const getRandomHealthManaDamageDefense = () => {
   const points = {
     healthPoints: null,
     manaPoints: null,
-    damagePoints: null,
-    defensePoints: null,
+    damage: null,
+    defense: null,
   };
 
   for (let point in points) {
@@ -76,8 +76,14 @@ const getRandomHealthManaDamageDefensePoints = () => {
 const domain = "http://localhost:3000";
 
 const newCharacterForm = async () => {
-  const name = capitalize(prompt("Enter name of character:"));
+  let name = "";
   let userInputForCharacterClass = "";
+
+  do {
+    name = capitalize(prompt("Enter name of character:"));
+    if (name === "") alert("Name can't be empty!");
+  } while (name === "");
+
   do {
     userInputForCharacterClass = capitalize(
       prompt("Enter class of character:")
@@ -89,7 +95,7 @@ const newCharacterForm = async () => {
   );
 
   const classStats = getClassStats(userInputForCharacterClass); // {strength: 7, agility: 3, intelligence: 10}
-  const classPoints = getRandomHealthManaDamageDefensePoints(); // {healthPoints: 51, manaPoints: 50, damagePoints: 83, defensePoints: 88}
+  const classPoints = getRandomHealthManaDamageDefense(); // {healthPoints: 51, manaPoints: 50, damage: 83, defense: 88}
 
   const character = {
     name,
@@ -99,8 +105,8 @@ const newCharacterForm = async () => {
     intelligence: classStats.intelligence,
     healthPoints: classPoints.healthPoints,
     manaPoints: classPoints.manaPoints,
-    damagePoints: classPoints.damagePoints,
-    defensePoints: classPoints.defensePoints,
+    damage: classPoints.damage,
+    defense: classPoints.defense,
   };
 
   return character;
@@ -117,8 +123,8 @@ async function createNewCharacter(character) {
       intelligence: character.intelligence,
       healthPoints: character.healthPoints,
       manaPoints: character.manaPoints,
-      damagePoints: character.damagePoints,
-      defensePoints: character.defensePoints,
+      damage: character.damage,
+      defense: character.defense,
     }),
     headers: { "Content-Type": "application/json" },
   });
@@ -172,6 +178,7 @@ const printAndGetAllUnusedItems = async () => {
     message += "\n";
   });
   alert(message);
+
   return unusedItems;
 };
 
@@ -217,25 +224,56 @@ const equipItem = async (equipItemId, selectedCharacterId) => {
   return data;
 };
 
-const withoutNullValues = (sameSlotCurrentItem) => {
-  return Object.fromEntries(
-    Object.entries(sameSlotCurrentItem).filter(
-      ([key, value]) =>
-        !key.includes("id") && !key.includes("Id") && value !== null
-    )
-  );
-};
-
 const getCharacterStats = async () => {
   const selectedCharacter = localStorage.getItem("id");
 
   const response = await fetch(domain + "/characters/" + selectedCharacter);
   const selectedCharacterData = await response.json();
-  console.log(await selectedCharacterData);
 
-  return data;
+  const itemsRes = await fetch(
+    domain + "/items/?characterId=" + selectedCharacter
+  );
+  const items = await itemsRes.json();
+
+  const stats = {};
+
+  Object.keys(selectedCharacterData).forEach((key) => {
+    if (key !== "class" && key !== "id" && key !== "name") {
+      const baseStatValue = selectedCharacterData[key];
+      const itemsStatValue = items.reduce((acc, curr) => {
+        acc += curr[key];
+
+        return acc;
+      }, 0);
+      const totalValue = baseStatValue + itemsStatValue;
+
+      stats[
+        key
+      ] = `${totalValue} (${baseStatValue} + ${itemsStatValue} from items)`;
+    }
+  });
+
+  let selectedCharacterStats = `Stats for ${selectedCharacterData.name}:
+`;
+
+  Object.entries(stats).forEach(([key, value]) => {
+    selectedCharacterStats += `- ${key}: ${value}
+`;
+  });
+
+  alert(selectedCharacterStats);
+
+  return selectedCharacterData;
 };
-// getCharacterStats();
+
+const withoutNullValues = (item) => {
+  return Object.fromEntries(
+    Object.entries(item).filter(
+      ([key, value]) =>
+        !key.includes("id") && !key.includes("Id") && value !== null
+    )
+  );
+};
 
 const getCharacterNames = async () => {
   const response = await fetch(domain + "/characters/");
@@ -264,6 +302,96 @@ const getAllCharacters = async () => {
   alert(message);
 };
 
+const getRandomItemSlot = () => {
+  const avaliableSlots = ["weapon", "helmet", "armor", "boots", "gloves"];
+  const randomIndex = Math.floor(Math.random() * avaliableSlots.length);
+  const randomSlot = avaliableSlots[randomIndex];
+
+  return randomSlot;
+};
+
+const getRandomModifiersAndItemStats = (itemSlot) => {
+  const modifiers = [
+    "strength",
+    "agility",
+    "intelligence",
+    "healthPoints",
+    "manaPoints",
+    "damage",
+    "defense",
+  ];
+  const mainStats = ["strength", "agility", "intelligence"];
+
+  const firstModifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+  let secondModifier = "";
+
+  do {
+    secondModifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+  } while (firstModifier === secondModifier);
+
+  const newItem = {};
+
+  modifiers.forEach((modifier) => {
+    if (
+      (modifier === firstModifier || modifier === secondModifier) &&
+      (mainStats.includes(firstModifier) || mainStats.includes(secondModifier))
+    ) {
+      newItem[modifier] = generateRandomNumberInRange(1, 5);
+    } else if (
+      (modifier === firstModifier || modifier === secondModifier) &&
+      (!mainStats.includes(firstModifier) ||
+        !mainStats.includes(secondModifier))
+    ) {
+      newItem[modifier] = generateRandomNumberInRange(1, 25);
+    } else {
+      newItem[modifier] = null;
+    }
+  });
+
+  let newItemStats = `New item:
+
+slot: ${itemSlot}
+`;
+
+  Object.entries(newItem).forEach(([key, value]) => {
+    if (value !== null) newItemStats += `${key}: ${value}\n`;
+  });
+
+  alert(newItemStats);
+
+  return newItem;
+};
+
+const getLastAddedItemId = async () => {
+  const response = await fetch(domain + "/items");
+
+  const allItemsData = await response.json();
+
+  return allItemsData[allItemsData.length - 1].id;
+};
+
+const createNewItem = async (itemName, randomSlot, itemStats) => {
+  const response = await fetch(domain + "/items/", {
+    method: "POST",
+    body: JSON.stringify({
+      name: itemName,
+      slot: randomSlot,
+      strength: itemStats.strength,
+      agility: itemStats.agility,
+      intelligence: itemStats.intelligence,
+      healthPoints: itemStats.healthPoints,
+      manaPoints: itemStats.manaPoints,
+      damage: itemStats.damage,
+      defense: itemStats.defense,
+      characterId: null,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const newItem = await response.json();
+  return newItem;
+};
+
 const printMainMenu = async () => {
   let choice = "";
   const result = await checkLocalStorage();
@@ -281,7 +409,7 @@ const printMainMenu = async () => {
 
           const addedCharacter = await createNewCharacter(character);
 
-          localStorage.setItem("id", addedCharacter.id); // set id to localstorage
+          localStorage.setItem("id", addedCharacter.id);
 
           break;
 
@@ -324,10 +452,19 @@ Equiped:
           usedItems.map(
             (e) => (message += ` - ${e.name}, slot: ${e.slot} (id: ${e.id})\n`)
           );
-          const userInputForItem = parseInt(prompt(message));
-          if (userInputForItem === usedItems[userInputForItem]?.id) {
+
+          let userInputForItem;
+          do {
+            userInputForItem = parseInt(prompt(message)); // CANNOT BE EMPTY
+            if (!userInputForItem) alert("Response must not be empty!");
+          } while (!userInputForItem);
+
+          if (usedItems.find((item) => item.id === userInputForItem)) {
+            const match = usedItems.find(
+              (item) => item.id === userInputForItem
+            );
+            alert(`Unequiped item ${match.name}`);
             unequipItem(userInputForItem);
-            alert(`Unequiped item ${usedItems[userInputForItem]?.name}`);
           } else {
             const unusedItem = unusedItems.find(
               (item) => item.id === userInputForItem
@@ -340,18 +477,30 @@ Equiped:
             } else if (sameSlotCurrentItem.slot === unusedItem.slot) {
               const resultCurrentItem = withoutNullValues(sameSlotCurrentItem);
               const resultUnusedItem = withoutNullValues(unusedItem);
-              let userInputForSwapItem = "";
+
+              let userInputForSwapItem = `Want to swap
+`;
+
+              Object.entries(resultCurrentItem).forEach(([key, value]) => {
+                userInputForSwapItem += `${key}: ${value}\n`;
+              });
+
+              userInputForSwapItem += `with
+`;
+              Object.entries(resultUnusedItem).forEach(([key, value]) => {
+                userInputForSwapItem += `${key}: ${value}\n`;
+              });
+
+              userInputForSwapItem += `
+Enter 'yes' or 'no:
+`;
+              let swap = "";
               do {
-                userInputForSwapItem = prompt(`Want to keep
-                ${JSON.stringify(resultCurrentItem)}
-                or swap to
-                ${JSON.stringify(resultUnusedItem)}?
-                Enter yes or no:`).toLowerCase();
-              } while (
-                userInputForSwapItem !== "yes" &&
-                userInputForSwapItem !== "no"
-              );
-              if (userInputForSwapItem === "yes") {
+                swap = prompt(userInputForSwapItem).toLowerCase();
+                if (!swap) alert("Response must not be empty!");
+              } while (swap !== "yes" && swap !== "no");
+
+              if (swap === "yes") {
                 const equipItemId = unusedItem.id;
 
                 await unequipItem(sameSlotCurrentItem.id);
@@ -368,8 +517,7 @@ Equiped:
           break;
 
         case "3":
-          //print character stats (base + from items)
-          // getCharacterStats();
+          await getCharacterStats();
           break;
 
         case "4":
@@ -408,7 +556,11 @@ Equiped:
           break;
 
         case "6":
-          //dungen (random item with 2 stats, enter name)
+          const randomSlot = getRandomItemSlot();
+          const itemStats = getRandomModifiersAndItemStats(randomSlot);
+          const itemName = capitalize(prompt("Enter item name:"));
+          createNewItem(itemName, randomSlot, itemStats);
+          alert(`Created ${itemName}, slot: ${randomSlot}`);
           break;
 
         case "7":
@@ -419,7 +571,6 @@ Equiped:
           alert("Wrong input");
       }
     } while (choice !== "7");
-    // getSelectedCharacterInfo() // print name and new menu
   }
 };
 
